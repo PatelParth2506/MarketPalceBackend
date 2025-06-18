@@ -1,0 +1,27 @@
+{
+  "development": {
+    "username": "devuser",
+    "password": "Dev!123#",
+    "database": "db_parth",
+    "host": "43.205.160.69",
+    "dialect": "mysql" ,
+    "timezone": "+00:00",
+    "logging":false
+  },
+  "test": {
+    "username": "devuser",
+    "password": "Dev!123#",
+    "database": "db_parth",
+    "host": "43.205.160.69",
+    "dialect": "mysql" ,
+    "timezone": "+00:00" 
+  },
+  "production": {
+    "username": "devuser",
+    "password": "Dev!123#",
+    "database": "db_parth",
+    "host": "43.205.160.69",
+    "dialect": "mysql" ,
+    "timezone": "+00:00"
+  }
+}
