@@ -5,15 +5,16 @@ const { ctrlCreateSubCategory, ctrlDeleteSubCategory, ctrlGetAllSubCategory, ctr
 const { createSubCategory,id } = require('../validators/subCategory.validator.js')
 const upload = require('../middlewares/multer.middleware.js')
 const auth  = require('../middlewares/auth.midddleware.js') 
+const { validator } = require('../middlewares/validator.middleware.js')
 
-router.post("/v1/api_createSubCategory",[auth,createSubCategory,upload.single('image_path')],ctrlCreateSubCategory)
+router.post("/v1/api_createSubCategory",[auth,createSubCategory,upload.single('image_path'),validator],ctrlCreateSubCategory)
 
 router.get('/v1/api_getallSubCategory',auth,ctrlGetAllSubCategory)
 
-router.patch('/v1/api_subCategoryUpdate',[auth,id,upload.single('image_path')],ctrlUpdateSubCategory)
+router.patch('/v1/api_subCategoryUpdate',[auth,id,upload.single('image_path'),validator],ctrlUpdateSubCategory)
 
-router.delete('/v1/api_deleteSubCategory',[auth,id],ctrlDeleteSubCategory)
+router.delete('/v1/api_deleteSubCategory',[auth,id,validator],ctrlDeleteSubCategory)
 
-router.get('/v1/api_getSingleSubCategory',[auth,id],ctrlGetSubCategoryById)
+router.get('/v1/api_getSingleSubCategory',[auth,id,validator],ctrlGetSubCategoryById)
 
 module.exports = router

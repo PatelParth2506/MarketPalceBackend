@@ -6,7 +6,7 @@ const validator = (req, res, next) => {
 
   if (!errors.isEmpty()) {
     return res.status(400).json(
-      new apiError(400,errors.array().map(err => err.msg),errors)
+      new apiError(400,errors.array().map(err => err.msg),errors.array())
     );
   }
 

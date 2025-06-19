@@ -12,16 +12,17 @@ const {
     id
 }  = require('../validators/user.validator')
 const auth  = require('../middlewares/auth.midddleware')
+const { validator } = require('../middlewares/validator.middleware')
 
 
-router.post('/v1/api_register',[auth,validateRegister],ctrlCreateUser)
+router.post('/v1/api_register',[auth,validateRegister,validator],ctrlCreateUser)
 
-router.post('/v1/api_login',[validateLogin],ctrlLogin)
+router.post('/v1/api_login',[validateLogin,validator],ctrlLogin)
 
 router.get('/v1/api_getdata',[auth],ctrlGetallUsers)
 
-router.patch('/v1/api_updateUser',[auth,validateRegister],ctrlUpdateUser)
+router.patch('/v1/api_updateUser',[auth,validateRegister,validator],ctrlUpdateUser)
 
-router.delete('/v1/api_deleteuser',[auth,id],ctrlDeleteUser)
+router.delete('/v1/api_deleteuser',[auth,id,validator],ctrlDeleteUser)
 
 module.exports = router

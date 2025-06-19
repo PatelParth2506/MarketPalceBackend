@@ -6,6 +6,7 @@ const subcategoryRoutes = require('./src/routes/subcategory.route')
 const productRoutes = require('./src/routes/product.routes')
 const addressRoutes = require('./src/routes/address.route')
 const cartRoutes = require('./src/routes/cart.route')
+const orderRoutes = require('./src/routes/order.route')
 
 const app = express()
 
@@ -19,6 +20,7 @@ app.use('/subCategory',subcategoryRoutes)
 app.use('/product',productRoutes)
 app.use('/address',addressRoutes)
 app.use('/cart',cartRoutes)
+app.use('/order',orderRoutes)
 
 app.use((err, req, res, next) => {
     if (err instanceof apiError) {
@@ -40,6 +42,10 @@ app.use((err, req, res, next) => {
       stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
 });
+
+app.get('/',(req,res)=>{
+  res.send("Api Is Working")
+})
 
 app.listen(3000,()=>{
     console.log("App Is Running In Port 3000")
