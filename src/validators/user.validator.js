@@ -17,6 +17,8 @@ const role =  body("role").optional()
 const mobileNo = body('mobileNo').notEmpty().withMessage("Password Is Required")
 .isLength({min:10,max:10}).withMessage("Password Must Be Atleast 6 Characters")
 
+const refreshToken  = body('refreshToken').notEmpty().withMessage('It Cant Be Empty')
+
 const validateRegister = [username,email,password,role,mobileNo]
 
 const validateLogin = [email,password]
@@ -28,6 +30,7 @@ module.exports = {
     password,
     role,
     mobileNo,
+    refreshToken,
     validateRegister,
     validateLogin
 }

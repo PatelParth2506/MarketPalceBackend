@@ -2,44 +2,48 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_product', {
+    await queryInterface.createTable('tbl_market_discount', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      subcategory_id:{
+      startingDate:{
+        type:Sequelize.DATE,
+        allowNull:false
+      },
+      endingDate:{
+        type:Sequelize.DATE,
+        allowNull:false
+      },
+      product_id:{
         type:Sequelize.INTEGER,
         allowNull:false,
         references:{
-          model:'tbl_market_subcategory',
-          key:"id"
+          model:'tbl_market_product',
+          key:'id'
         },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
+        onUpdate:'CASCADE',
+        onDelete:'CASCADE'
       },
-      product_title:{
-        type:Sequelize.STRING,
+      discount:{
+        type:Sequelize.INTEGER,
+        allowNull:false
+      },
+      is_active:{
+        type:Sequelize.BOOLEAN,
         allowNull:false,
-        validate:{
-          len:[4-15]
-        }
-      },
-     product_description: {
-        type: Sequelize.STRING
+        defaultValue:false
       },
       createdBy:{
         type:Sequelize.INTEGER,
         allowNull:false
       },
-      updatedBy:{
-        type:Sequelize.STRING
-      },
-      is_delete:{
-        type:Sequelize.BOOLEAN,
-        defaultValue:false,
-        allowNull:false
+      typeOfDiscount:{
+        type:Sequelize.ENUM('per','flat'),
+        allowNull:false,
+        defaultValue:'per'
       },
       createdAt: {
         allowNull: false,
@@ -52,7 +56,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    // await queryInterface.dropTable('tbl_market_product');
-    await queryInterface.removeColumn('tbl_market_product', 'product_image_path')
+    await queryInterface.dropTable('tbl_market_discount');
   }
 };

@@ -4,24 +4,25 @@ const { apiResponse } = require('../utils/apiResponse.js');
 const path = require('path')
 const fs = require('fs');
 const { where, Op } = require('sequelize');
+const { HTTP_CODE, HTTP_STATUS } = require('../utils/constans.js');
 
 const Subcategory = db.Subcategory;
 const Category = db.Category;
 
 const ctrlCreateSubCategory = async (req, res) => {
-  if(req.user.role === 'user') throw new apiError(410,"Unauthorized Access")
+  if(req.user.role === 'user') throw new apiError(HTTP_STATUS.UNAUTHORIZED,"Unauthorized Access")
   const subCategoryCheck = await Subcategory.findOne({
     where: { subcategory_title: req.body.title,category_id:req.body.category_id },
   });
 
   if (subCategoryCheck)
-    throw new apiError(410, "SubCategory Alrady Exists With This Creditinals");
-  if(!req.file) throw new apiError(404,"Image Path Is Required To Create Subcategory")
+    throw new apiError(HTTP_STATUS.BAD_REQUEST, "SubCategory Alrady Exists With This Creditinals");
+  if(!req.file) throw new apiError(HTTP_STATUS.BAD_REQUEST,"Image Path Is Required To Create Subcategory")
   
   const category = await Category.findByPk(req.body.category_id);
   if (!category)
     throw new apiError(
-      404,
+      HTTP_STATUS.DATA_NOT_FOUND,
       "No Category Exists With This Details Enter Valid Id"
     );
 
@@ -34,15 +35,15 @@ const ctrlCreateSubCategory = async (req, res) => {
   });
 
   res
-    .status(200)
+    .status(HTTP_STATUS.CREATED)
     .json(
-      new apiResponse(200, subcategory, "SubCategory Created SuccessFully")
+      new apiResponse(HTTP_CODE.CREATED, subcategory, "SubCategory Created SuccessFully")
     );
 };
 
 const ctrlGetAllSubCategory = async (req, res) => {
     if (!req.user.id)
-      throw new apiError(410, "Unauthorized Access Login To Access Api");
+      throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access Login To Access Api");
     const subcategories = await Subcategory.findAll({
       where: { is_delete: false },
       include: [
@@ -53,8 +54,8 @@ const ctrlGetAllSubCategory = async (req, res) => {
     });
     if (subcategories.length === 0) {
       return res
-        .status(404)
-        .json(new apiResponse(404, null, "No Records Found"));
+        .status(HTTP_STATUS.NOT_FOUND)
+        .json(new apiResponse(HTTP_CODE.DATA_NOT_FOUND, null, "No Records Found"));
     }
 
     const newdata = subcategories.map((subcat) => {
@@ -70,27 +71,27 @@ const ctrlGetAllSubCategory = async (req, res) => {
       };
     });
     return res
-      .status(200)
-      .json(new apiResponse(200, newdata, "All Data Fetched Successfully"));
+      .status(HTTP_STATUS.OK)
+      .json(new apiResponse(HTTP_CODE.OK, newdata, "All Data Fetched Successfully"));
 };
 
 const ctrlDeleteSubCategory = async (req, res) => {
-    if(req.user.role === 'user') throw new apiError(406,"You Don't Have Access To This Api")
+  if(req.user.role === 'user') throw new apiError(HTTP_STATUS.UNAUTHORIZED,"You Don't Have Access To This Api")
   const check = await Subcategory.findByPk(req.body.id);
-  if (!check) throw new apiError(404, "No Records Are Found ");
+  if (!check) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Are Found ");
   // await check.destroy();
   check.is_delete = true;
   await check.save();
   res
-    .status(200)
-    .json(new apiResponse(200, [], "SubCategory Deleted Successfully"));
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, [], "SubCategory Deleted Successfully"));
 };
 
 const ctrlUpdateSubCategory = async (req, res) => {
-  if(req.user.role === 'user') throw new apiError(406,"You Don't Have Access To This Api")
+  if(req.user.role === 'user') throw new apiError(HTTP_STATUS.UNAUTHORIZED,"You Don't Have Access To This Api")
   const subCategory = await Subcategory.findByPk(req.body.id);
   if (!subCategory)
-    throw new apiError(404, "No Record Found With This Details");
+    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Record Found With This Details");
   const updatedData = {};
   if (req.body.title) updatedData.subcategory_title = req.body.title;
   if (req.body.description) updatedData.subcategory_description = req.body.description;
@@ -105,20 +106,20 @@ const ctrlUpdateSubCategory = async (req, res) => {
   }
 
   if (JSON.stringify(updatedData) === '{}') {
-    throw new apiError(404, "One Of The Flied Is Required To Update");
+    throw new apiError(HTTP_STATUS.BAD_REQUEST, "One Of The Flied Is Required To Update");
   }
   const recordcheck = await Subcategory.findOne({where:{
     [Op.or]:{...updatedData}
   }})
-  if(recordcheck) throw new apiError(410,"Can't Updated Recored With This Creditinals Already Exists")
+  if(recordcheck) throw new apiError(HTTP_STATUS.BAD_REQUEST,"Can't Updated Recored With This Creditinals Already Exists")
   updatedData.createdBy = req.user.id
   const upatedSubCategory = await subCategory.update(updatedData);
 
   res
-    .status(200)
+    .status(HTTP_STATUS.OK)
     .json(
       new apiResponse(
-        200,
+        HTTP_CODE.OK,
         upatedSubCategory,
         "SubCategory Updated Successfully"
       )
@@ -127,11 +128,12 @@ const ctrlUpdateSubCategory = async (req, res) => {
 
 const ctrlGetSubCategoryById = async (req, res) => {
     if (!req.user)
-      throw new apiError(410, "Unauthorized Access Login To Access Api");
+      throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access Login To Access Api");
   const subCategory = await Subcategory.findByPk(req.body.id, {
     where: { is_delete: false },
     include: [Category,db.Product],
   });
+  if(!subCategory) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND,"No Records Found With This Details")
   const subcategory_title = subCategory.subcategory_title
   const category_title = subCategory.Category.title
   const newdata = subCategory.Products.map((product)=>{
@@ -145,8 +147,8 @@ const ctrlGetSubCategoryById = async (req, res) => {
   })
 
   res
-    .status(200)
-    .json(new apiResponse(200, newdata, "Data Fetched SuccessFully"));
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, newdata, "Data Fetched SuccessFully"));
 };
 
 module.exports = { 

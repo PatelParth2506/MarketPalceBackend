@@ -7,11 +7,11 @@ const upload = require('../middlewares/multer.middleware.js')
 const auth  = require('../middlewares/auth.midddleware.js') 
 const { validator } = require('../middlewares/validator.middleware.js')
 
-router.post("/v1/api_createSubCategory",[auth,createSubCategory,upload.single('image_path'),validator],ctrlCreateSubCategory)
+router.post("/v1/api_createSubCategory",[auth,upload.single('image_path'),createSubCategory,validator],ctrlCreateSubCategory)
 
 router.get('/v1/api_getallSubCategory',auth,ctrlGetAllSubCategory)
 
-router.patch('/v1/api_subCategoryUpdate',[auth,id,upload.single('image_path'),validator],ctrlUpdateSubCategory)
+router.patch('/v1/api_subCategoryUpdate',[auth,upload.single('image_path'),id,validator],ctrlUpdateSubCategory)
 
 router.delete('/v1/api_deleteSubCategory',[auth,id,validator],ctrlDeleteSubCategory)
 

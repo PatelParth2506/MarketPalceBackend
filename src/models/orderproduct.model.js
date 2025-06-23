@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
         type:DataTypes.INTEGER,
         allowNull:false
       },
+      product_discounted_price:{
+        type:DataTypes.INTEGER,
+        defaultValue:0
+      },
       quentity:{
         type:DataTypes.INTEGER,
         allowNull:false

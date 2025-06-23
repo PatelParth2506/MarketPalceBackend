@@ -8,6 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       Product.belongsTo(models.Subcategory,{ foreignKey : 'subcategory_id' })
       Product.hasMany(models.OrderProduct , { foreignKey : 'product_id', sourceKey: 'id' })
       Product.belongsToMany(models.Order, { through : models.OrderProduct, foreignKey : 'product_id', otherKey : 'order_id' })
+      Product.hasMany(models.ProductImage, { foreignKey : 'product_id', sourceKey : 'id' })
+      Product.hasMany(models.Discount, { foreignKey : 'product_id', sourceKey : 'id' })
     }
   }
   Product.init({
@@ -37,13 +39,13 @@ module.exports = (sequelize, DataTypes) => {
      product_description: {
         type: DataTypes.STRING
       },
-      product_image_path: {
-        type: DataTypes.STRING,
-        allowNull:false
-      },
       price:{
         type:DataTypes.INTEGER,
         allowNull:false
+      },
+      discountedPrice:{
+        type:DataTypes.INTEGER,
+        defaultValue:0
       },
       createdBy:{
         type:DataTypes.INTEGER,

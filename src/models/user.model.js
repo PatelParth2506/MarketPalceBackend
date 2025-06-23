@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       User.hasMany(models.Cart,{ foreignKey : 'user_id', sourceKey: 'id' })
       User.hasMany(models.Address,{ foreignKey : 'user_id', sourceKey: 'id' })
+      User.hasMany(models.Session, { foreignKey : 'user_id', sourceKey : 'id' })
     }
   }
   User.init({
@@ -40,6 +41,11 @@ module.exports = (sequelize, DataTypes) => {
         type:DataTypes.ENUM('user','admin','superadmin'),
         defaultValue:'user',
         allowNull:false,
+      },
+      tokenVersion:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        defaultValue:0
       },
       createdBy:{
         type:DataTypes.INTEGER

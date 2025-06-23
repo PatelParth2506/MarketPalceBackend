@@ -7,10 +7,11 @@ const title = body("title").notEmpty().withMessage("Title Is Required")
 
 const category_id = body("subcategory_id").notEmpty().withMessage("Category ID Must Required")
                                               .isNumeric().withMessage("Id Must Be Integer")
+                                              
 const price = body('price').notEmpty().withMessage("You Must Have To Enter Price To Create Product")
 
 const description = body("description").optional()
-                                            
+
 const createProduct = [title,description,category_id,price]
 
 module.exports = {
