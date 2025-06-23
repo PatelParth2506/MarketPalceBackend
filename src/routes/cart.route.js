@@ -7,8 +7,9 @@ const { ctrlAddToCart,
     ctrlRemoveCart,
     ctrlUpdateQuentity } = require('../controllers/cart.controller')
 const auth = require('../middlewares/auth.midddleware')
-const { addToCart, id, quentity } = require('../validators/cart.validator')
 const { validator } = require('../middlewares/validator.middleware')
+
+const { addToCart, id, quentity } = require('../validators/cart.validator')
 
 router.post('/v1/api_adddToCart',[auth,addToCart,validator],ctrlAddToCart)
 

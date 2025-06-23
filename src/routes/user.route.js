@@ -10,15 +10,16 @@ const {  ctrlCreateUser,
     ctrlGetAllLoggedInUser,
     ctrlLogoutSingleUser,
     ctrlLogoutAllUser}  = require('../controllers/user.controller')
+
 const {
     validateRegister,
     validateLogin,
     id,
     refreshToken
 }  = require('../validators/user.validator')
+
 const auth  = require('../middlewares/auth.midddleware')
 const { validator } = require('../middlewares/validator.middleware')
-
 
 router.post('/v1/api_register',[auth,validateRegister,validator],ctrlCreateUser)
 

@@ -1,79 +1,111 @@
-const { apiError } =  require('../utils/apiError')
-const { apiResponse } = require('../utils/apiResponse')
-const db =require('../models/index')
-const { where } = require('sequelize')
-const { raw } = require('mysql2')
-const Cart = db.Cart
-const { HTTP_STATUS,HTTP_CODE } = require('../utils/constans')
+const { apiError } = require("../utils/apiError");
+const { apiResponse } = require("../utils/apiResponse");
+const db = require("../models/index");
+const { where } = require("sequelize");
+const { raw } = require("mysql2");
+const Cart = db.Cart;
+const { HTTP_STATUS, HTTP_CODE } = require("../utils/constans");
 
-const ctrlAddToCart = async(req,res)=>{
+const ctrlAddToCart = async (req, res) => {
+  const product = await Cart.findOne({
+    where: { 
+        user_id: req.user.id,
+         product_id: req.body.product_id
+     },
+  });
 
-    const product = await Cart.findOne({where:{user_id:req.user.id,product_id:req.body.product_id}})
-    if(product){
-        product.quentity += req.body.quentity
-        await product.save()
-    }else{
-        const cart = await Cart.create({
-            user_id:req.user.id,
-            product_id:req.body.product_id,
-            quentity:req.body.quentity
-        })
+  if (product) {
+    product.quentity += req.body.quentity;
+    await product.save();
+  } else {
+    const cart = await Cart.create({
+      user_id: req.user.id,
+      product_id: req.body.product_id,
+      quentity: req.body.quentity,
+    });
+  }
+
+  res
+    .status(HTTP_STATUS.CREATED)
+    .json(new apiResponse(HTTP_CODE.CREATED, "Product Added To Cart"));
+};
+
+const ctrlRemoveCart = async (req, res) => {
+  const cart = await Cart.findByPk(id);
+  if (!cart){
+    throw new apiError(
+      HTTP_STATUS.DATA_NOT_FOUND,
+      "No Cart Found With This Details"
+    );
     }
-    res.status(HTTP_STATUS.CREATED).json(
-        new apiResponse(HTTP_CODE.CREATED,"Product Added To Cart")
-    )
-}
 
-const ctrlRemoveCart = async(req,res)=>{
+  if (cart.user_id !== req.user.id){
+    throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
+  }
 
-    const cart = await Cart.findByPk(id)
-    if(!cart) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND,"No Cart Found With This Details")
-    if(cart.user_id !== req.user.id) throw new apiError(HTTP_STATUS.UNAUTHORIZED,"Unauthorized Access")
-    await cart.destroy()
-    res.status(HTTP_STATUS.OK).json(
-        new apiResponse(HTTP_CODE.OK,"Cart Removed SuccessFully")
-    )
-}
+  await cart.destroy();
+  
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, "Cart Removed SuccessFully"));
+};
 
-const ctrlUpdateQuentity = async(req,res)=>{
+const ctrlUpdateQuentity = async (req, res) => {
+  const cart = await Cart.findByPk(req.body.id);
+  if (!cart){
+     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Found");
+  }
+  
+  if (cart.user_id !== req.user.id){
+    throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
+  }
 
-    const cart = await Cart.findByPk(req.body.id)
-    if(!cart) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND,"No Cart Found")
-    if(cart.user_id !== req.user.id) throw new apiError(HTTP_STATUS.UNAUTHORIZED,"Unauthorized Access")
-    cart.quentity = req.body.quentity
-    await cart.save()
-    res.status(HTTP_STATUS.OK).json(
-        new apiResponse(HTTP_CODE.OK,"Quentity Updated SuccessFully",cart)
-    )
-}
+  cart.quentity = req.body.quentity;
+  await cart.save();
+  
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, "Quentity Updated SuccessFully", cart));
+};
 
-const ctrlGetCartById = async(req,res)=>{
-     const cart = await Cart.findAll({
-        where:{user_id : req.user.id},
-        include:[db.Product],
-        raw:true
-    })
-    if(!cart) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND,"No Cart Item Found")
-    res.status(HTTP_STATUS.OK).json(
-        new apiResponse(HTTP_CODE.OK,"Cart Fetched SuccesFully",cart)
-    )
-}
+const ctrlGetCartById = async (req, res) => {
+  const cart = await Cart.findAll({
+    where: {
+         user_id: req.user.id
+    },
+    include: [ db.Product ],
+    raw: true,
+  });
+  if (!cart){
+    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Item Found"); 
+  }
 
-const ctrlGetAllCart = async(req,res)=>{
-    const cart = await Cart.findAll({
-        include:[db.Product,db.User],
-        raw:true
-    })
-    if(!cart) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND,"No Cart Item Found")
-    res.status(HTTP_STATUS.OK).json(
-        new apiResponse(HTTP_CODE.OK,"Cart Fetched SuccesFully",cart)
-    )
-}
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, "Cart Fetched SuccesFully", cart));
+};
+
+const ctrlGetAllCart = async (req, res) => {
+  const cart = await Cart.findAll({
+    include: [ 
+        db.Product,
+         db.User
+    ],
+    raw: true,
+  });
+  if (!cart){
+    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Item Found"); 
+  }
+  
+  res
+    .status(HTTP_STATUS.OK)
+    .json(new apiResponse(HTTP_CODE.OK, "Cart Fetched SuccesFully", cart));
+};
 
 module.exports = {
-    ctrlAddToCart,
-    ctrlGetAllCart,
-    ctrlGetCartById,
-    ctrlRemoveCart,
-    ctrlUpdateQuentity
-}
+  ctrlAddToCart,
+  ctrlGetAllCart,
+  ctrlGetCartById,
+  ctrlRemoveCart,
+  ctrlUpdateQuentity,
+};

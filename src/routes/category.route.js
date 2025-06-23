@@ -15,7 +15,7 @@ router.post("/v1/api_cretaeCategory",[auth,upload.single('image_path'),createCat
 
 router.get("/v1/api_getalldata",auth,ctrlGetCategory)
 
-router.get("/v1/api_getSingleCategory",[auth,id,validator],ctrlGetSingleCategory)
+router.get("/v1/api_getSingleCategory",[auth],ctrlGetSingleCategory)
 
 router.delete("/v1/api_deleteCategory",[auth,id,validator],ctrlDeleteCategory)
 

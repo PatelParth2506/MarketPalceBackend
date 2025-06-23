@@ -9,38 +9,11 @@ const cartRoutes = require('./src/routes/cart.route')
 const orderRoutes = require('./src/routes/order.route')
 const discountRoutes = require('./src/routes/discount.route')
 const { HTTP_CODE, HTTP_STATUS } = require('./src/utils/constans')
-// const session = require('express-session')
-// const cookie = require('express-session/session/cookie')
-// const sequelizeSession = require('connect-session-sequelize')(session.Store)
-// const sequelize = require('./config/db')
-// const sequelizeStore = new sequelizeSession({
-//   db:sequelize,
-//   checkExpirationInterval:15*60*1000,
-//   expiration:24 * 60 * 60 * 1000,
-//   extendDefaultFields: (defaults, session) => {
-//     return {
-//       data: defaults.data,
-//       expires: defaults.expires,
-//       userId: session.userId 
-//     }
-//   },
-// })
 const app = express()
 
 app.use(express.json({limit:"16kb"}))
 app.use(express.static("public"))
 app.use(express.urlencoded({extended:true}))
-// app.use(session({
-//   secret:'This Is Session Secret',
-//   store:sequelizeStore,
-//   resave:false,
-//   proxy:true,
-//   saveUninitialized:false,
-      // cookie:{
-      //   maxAge: 24 * 60 * 60 * 1000
-      // }
-// }))
-
 
 app.use('/auth',userRoutes)
 app.use('/category',categoryRoutes)

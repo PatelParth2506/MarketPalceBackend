@@ -12,6 +12,7 @@ const discount = body('discount').notEmpty().withMessage("You Have To Enter Disc
                                  .isInt().withMessage("It Must Be Number")
 
 const product_id = body('product_id').notEmpty().withMessage("The Product ID Can't Be Empty")
+
 const typeOfDiscount = body('typeOfDiscount').optional()
 
 const createDiscount = [startingDate,endingDate,discount,product_id,typeOfDiscount]

@@ -5,10 +5,12 @@ const {  ctrlCreateAddress,
     ctrlDeleteAddress,
     ctrlGetAddressByUserId,
     ctrlUpdateAddress } = require('../controllers/address.controller')
+
 const auth = require('../middlewares/auth.midddleware')
-const { createAddress,id, user_id } = require('../validators/address.validator')
 const upload = require('../middlewares/multer.middleware')
 const { validator } = require('../middlewares/validator.middleware')
+
+const { createAddress,id, user_id } = require('../validators/address.validator')
 
 router.post('/v1/api_createAddress',[auth,createAddress,validator],ctrlCreateAddress)
 

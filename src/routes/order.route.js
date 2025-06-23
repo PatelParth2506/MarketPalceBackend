@@ -3,10 +3,11 @@ const router = Router()
 
 const { ctrlPlaceOrder, ctrlUpdateProduct_status, ctrlGetAllOrders, ctrlGetSingleOrder, ctrlGetOrderStats, ctrlGetDateWiseOrder } = require('../controllers/order.controller')
 const auth = require('../middlewares/auth.midddleware')
-const { createorder,id,updateorder } = require('../validators/order.validator')
 const { validator } = require('../middlewares/validator.middleware')
 
-router.post('/v1/api_placeOrder',[auth],ctrlPlaceOrder)
+const { createorder,id,updateorder } = require('../validators/order.validator')
+
+router.post('/v1/api_placeOrder',[auth,createorder,validator],ctrlPlaceOrder)
 
 router.patch('/v1/api_updateOrderStatus',[auth,updateorder,validator],ctrlUpdateProduct_status)
 

@@ -2,7 +2,9 @@ const { Router } = require('express')
 const router = Router()
 
 const { ctrlCreateSubCategory, ctrlDeleteSubCategory, ctrlGetAllSubCategory, ctrlUpdateSubCategory, ctrlGetSubCategoryById }  = require('../controllers/subcategory.controller.js')
+
 const { createSubCategory,id } = require('../validators/subCategory.validator.js')
+
 const upload = require('../middlewares/multer.middleware.js')
 const auth  = require('../middlewares/auth.midddleware.js') 
 const { validator } = require('../middlewares/validator.middleware.js')

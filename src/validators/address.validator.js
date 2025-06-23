@@ -16,7 +16,6 @@ const pinCode = body('pinCode').notEmpty().withMessage("It Can't Be Empty")
 
 const user_id = body('user_id').notEmpty().withMessage("It Can't Be Empty")
 
-
 const createAddress = [apartment,landmark,city,state,pinCode,user_id]
 
 module.exports = { 

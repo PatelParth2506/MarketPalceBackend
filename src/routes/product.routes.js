@@ -8,7 +8,9 @@ const { ctrlCreateProduct,
     ctrlGetSingleProduct,
     ctrlDeleteSingleProductImage,
     ctrlUpdateProductImage } = require('../controllers/product.controller')
+    
 const { createProduct, id } = require('../validators/product.validator')
+
 const upload = require('../middlewares/multer.middleware')
 const auth = require('../middlewares/auth.midddleware')
 const { validator } = require('../middlewares/validator.middleware')
