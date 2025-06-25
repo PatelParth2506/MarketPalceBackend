@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('tbl_market_address', {
-      id: {
+      address_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -14,7 +14,7 @@ module.exports = {
         allowNull:false,
         references:{
           model:'tbl_market_user',
-          key:'id'
+          key:'user_id'
         },
         onDelete:'CASCADE',
         onUpdate:'CASCADE'

@@ -3,8 +3,11 @@ const { apiError } = require("../utils/apiError");
 const db = require("../models/index");
 const { where, Op } = require("sequelize");
 const { HTTP_STATUS, HTTP_CODE } = require("../utils/constans");
+const activityLog = require("../utils/activityLog");
 const Discount = db.Discount;
 const Product = db.Product;
+const ProductLog = db.ProductLog
+const DiscountLog = db.DiscountLog
 
 const ctrlAddDiscount = async (req, res) => {
   const checkDiscount = await Discount.findOne({
@@ -29,7 +32,7 @@ const ctrlAddDiscount = async (req, res) => {
     );
   }
 
-  if (req.user.id !== product.createdBy && req.user.role === "user"){
+  if (req.user.user_id !== product.createdBy && req.user.role === "user"){
     throw new apiError(
       HTTP_STATUS.UNAUTHORIZED,
       "You Don't Have Access To Create Discount"
@@ -73,16 +76,18 @@ const ctrlAddDiscount = async (req, res) => {
     endingDate: req.body.endingDate,
     discount: req.body.discount,
     product_id: req.body.product_id,
-    createdBy: req.user.id,
+    createdBy: req.user.user_id,
     typeOfDiscount: req.body.typeOfDiscount,
   });
-
+  await activityLog(discount,DiscountLog)
   const date = new Date();
   if (discount.startingDate <= date && discount.endingDate >= date) {
     product.discountedPrice = product.price - (discount.discount / 100) * product.price;
     discount.is_active = true;
     await discount.save();
     await product.save();
+    await activityLog(discount,DiscountLog)
+    await activityLog(product,ProductLog)
   }
 
   res
@@ -102,7 +107,7 @@ const ctrlDeleteDiscount = async (req, res) => {
     throw new apiError(HTTP_STATUS.NOT_FOUND, "No Discount Found");
   }
 
-  if (req.user.id !== discount.createdBy || req.user.role === "user"){
+  if (req.user.user_id !== discount.createdBy || req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -110,8 +115,9 @@ const ctrlDeleteDiscount = async (req, res) => {
     const product = await Product.findByPk(discount.product_id);
     product.discountedPrice = 0;
     await product.save();
+    await activityLog(product,ProductLog)
   }
-
+  await activityLog(discount,DiscountLog)
   await discount.destroy();
 
   res
@@ -230,7 +236,7 @@ const ctrlUpdateDiscount = async (req, res) => {
   }
   
   await discount.update(updatedData);
-
+  await activityLog(discount,DiscountLog)
   res
     .status(HTTP_STATUS.OK)
     .json(

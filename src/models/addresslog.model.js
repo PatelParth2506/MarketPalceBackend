@@ -3,17 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Address extends Model {
+  class AddressLog extends Model {
     static associate(models) {
-      Address.belongsTo(models.User, { foreignKey: 'user_id' })
+      // define association here
     }
   }
-  Address.init({
-      address_id: {
+  AddressLog.init({
+    addressLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      address_id : {
+        type : DataTypes.INTEGER,
+        allowNull: false
       },
       user_id:{
         type:DataTypes.INTEGER,
@@ -56,10 +60,10 @@ module.exports = (sequelize, DataTypes) => {
       }      
   }, {
     sequelize,
-    modelName: 'Address',
-    tableName:'tbl_market_address',
-    timestamps:true,
-    id:false
+    modelName: 'AddressLog',
+    tableName : 'tbl_market_addressLog',
+    timestamps : true,
+    id : false
   });
-  return Address;
+  return AddressLog;
 };

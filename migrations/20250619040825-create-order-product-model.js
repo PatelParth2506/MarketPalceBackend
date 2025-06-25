@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('tbl_market_orderProduct', {
-      id: {
+      orderProduct_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -14,7 +14,7 @@ module.exports = {
         allowNull:false,
         references:{
           model:'tbl_market_order',
-          key:'id'
+          key:'order_id'
         },
         onDelete:'RESTRICT',
         onUpdate:'RESTRICT'
@@ -24,7 +24,7 @@ module.exports = {
         allowNull:false,
         references:{
           model:'tbl_market_product',
-          key:'id'
+          key:'product_id'
         }, 
         onDelete:'RESTRICT',
         onUpdate:'RESTRICT'
@@ -36,6 +36,10 @@ module.exports = {
       product_price : {
         type:Sequelize.INTEGER,
         allowNull:false
+      },
+      product_discounted_price : {
+        type : Sequelize.INTEGER,
+        defaultValue : 0
       },
       quentity:{
         type:Sequelize.INTEGER,

@@ -6,7 +6,9 @@ const { where, Op } = require("sequelize");
 const { HTTP_CODE, HTTP_STATUS } = require("../utils/constans.js");
 const db = require("../models/index.js");
 const Subcategory = db.Subcategory;
+const SubcategoryLog = db.SubCategoryLog
 const Category = db.Category;
+const activityLog = require('../utils/activityLog.js')
 
 const ctrlCreateSubCategory = async (req, res) => {
   if (req.user.role === "user"){
@@ -45,10 +47,10 @@ const ctrlCreateSubCategory = async (req, res) => {
     subcategory_title: req.body.title,
     category_id: req.body.category_id,
     subcategory_description: req.body.description,
-    createdBy: req.user.id,
+    createdBy: req.user.user_id,
     subcategory_image_path: req.file.path,
   });
-
+  await activityLog(subcategory,SubcategoryLog)
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -86,7 +88,7 @@ const ctrlGetAllSubCategory = async (req, res) => {
     return {
       ...sub,
       Category_title: category.title,
-      Category_id: category.id,
+      Category_id: category.category_id,
       Category_description: category.description,
       Category_Image: category.image_path,
     };
@@ -107,14 +109,15 @@ const ctrlDeleteSubCategory = async (req, res) => {
     );
   }
 
-  const check = await Subcategory.findByPk(req.body.id);
+  const check = await Subcategory.findByPk(req.body.subcategory_id);
   if (!check){
     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Are Found ");
   }
   
   check.is_delete = true;
+  check.updatedBy = req.user.user_id
   await check.save();
-  
+  await activityLog(check,SubcategoryLog)
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -130,7 +133,7 @@ const ctrlUpdateSubCategory = async (req, res) => {
     );
   }
 
-  const subCategory = await Subcategory.findByPk(req.body.id);
+  const subCategory = await Subcategory.findByPk(req.body.subcategory_id);
   if (!subCategory){
     throw new apiError(
       HTTP_STATUS.DATA_NOT_FOUND,
@@ -181,9 +184,9 @@ const ctrlUpdateSubCategory = async (req, res) => {
     );
   }
   
-  updatedData.updatedBy = req.user.id;
+  updatedData.updatedBy = req.user.user_id;
   const upatedSubCategory = await subCategory.update(updatedData);
-
+  await activityLog(subCategory,SubcategoryLog)
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -196,7 +199,7 @@ const ctrlUpdateSubCategory = async (req, res) => {
 };
 
 const ctrlGetSubCategoryById = async (req, res) => {
-  const subCategory = await Subcategory.findByPk(req.body.id, {
+  const subCategory = await Subcategory.findByPk(req.body.subcategory_id, {
     where: { 
       is_delete: false 
     },

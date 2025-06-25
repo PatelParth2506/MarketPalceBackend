@@ -2,12 +2,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_discount', {
-      discount_id: {
+    await queryInterface.createTable('tbl_market_discountLog', {
+      discountLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
+      },
+      discount_id : {
+        type:Sequelize.INTEGER,
+        allowNull : false
       },
       startingDate:{
         type:Sequelize.DATE,
@@ -20,12 +24,6 @@ module.exports = {
       product_id:{
         type:Sequelize.INTEGER,
         allowNull:false,
-        references:{
-          model:'tbl_market_product',
-          key:'product_id'
-        },
-        onUpdate:'CASCADE',
-        onDelete:'CASCADE'
       },
       discount:{
         type:Sequelize.INTEGER,
@@ -56,6 +54,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_discount');
+    await queryInterface.dropTable('tbl_market_discountLog');
   }
 };

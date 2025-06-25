@@ -6,14 +6,14 @@ module.exports = (sequelize, DataTypes) => {
   class Product extends Model {
     static associate(models) {
       Product.belongsTo(models.Subcategory,{ foreignKey : 'subcategory_id' })
-      Product.hasMany(models.OrderProduct , { foreignKey : 'product_id', sourceKey: 'id' })
+      Product.hasMany(models.OrderProduct , { foreignKey : 'product_id', sourceKey: 'product_id' })
       Product.belongsToMany(models.Order, { through : models.OrderProduct, foreignKey : 'product_id', otherKey : 'order_id' })
-      Product.hasMany(models.ProductImage, { foreignKey : 'product_id', sourceKey : 'id' })
-      Product.hasMany(models.Discount, { foreignKey : 'product_id', sourceKey : 'id' })
+      Product.hasMany(models.ProductImage, { foreignKey : 'product_id', sourceKey : 'product_id' })
+      Product.hasMany(models.Discount, { foreignKey : 'product_id', sourceKey : 'product_id' })
     }
   }
   Product.init({
-    id: {
+    product_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -22,12 +22,6 @@ module.exports = (sequelize, DataTypes) => {
       subcategory_id:{
         type:DataTypes.INTEGER,
         allowNull:false,
-        references:{
-          model:'tbl_market_subcategory',
-          key:"id"
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
       },
       product_title:{
         type:DataTypes.STRING,
@@ -63,7 +57,8 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Product',
     tableName:'tbl_market_product',
-    timestamps:true
+    timestamps:true,
+    id:false
   });
   return Product;
 };

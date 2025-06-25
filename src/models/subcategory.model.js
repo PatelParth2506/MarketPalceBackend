@@ -6,11 +6,11 @@ module.exports = (sequelize, DataTypes) => {
   class Subcategory extends Model {
     static associate(models) {
       Subcategory.belongsTo(models.Category,{ foreignKey:'category_id' })
-      Subcategory.hasMany(models.Product, { foreignKey:'subcategory_id', sourceKey:'id' })
+      Subcategory.hasMany(models.Product, { foreignKey:'subcategory_id', sourceKey:'subcategory_id' })
     }
   }
   Subcategory.init({
-    id: {
+    subcategory_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -47,7 +47,8 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Subcategory',
     tableName:'tbl_market_subcategory',
-    timestamps:true
+    timestamps:true,
+    id:false
   });
   return Subcategory;
 };

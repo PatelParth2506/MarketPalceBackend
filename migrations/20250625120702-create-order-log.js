@@ -2,36 +2,28 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_cart', {
-      cart_id: {
+    await queryInterface.createTable('tbl_market_orderLog', {
+      orderLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      order_id : { 
+        type : Sequelize.INTEGER,
+        allowNull : false
+      },
+      totalPrice : {
+        type:Sequelize.INTEGER,
+        allowNull:false
+      },
+      order_status:{
+        type:Sequelize.ENUM('pending','delivered','rejected'),
+        allowNull:false,
+      },
       user_id:{
         type:Sequelize.INTEGER,
         allowNull:false,
-        references:{
-          model:'tbl_market_user',
-          key:'user_id'
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
-      },
-      product_id:{
-        type:Sequelize.INTEGER,
-        allowNull:false,
-        references:{
-          model:'tbl_market_product',
-          key:'product_id'
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
-      },
-      quentity:{
-        type:Sequelize.INTEGER,
-        allowNull:false
       },
       createdAt: {
         allowNull: false,
@@ -44,6 +36,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_cart');
+    await queryInterface.dropTable('tbl_market_orderLog');
   }
 };

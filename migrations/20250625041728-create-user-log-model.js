@@ -2,48 +2,51 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_product', {
-      product_id: {
+    await queryInterface.createTable('tbl_market_userLog', {
+      userLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      subcategory_id:{
-        type:Sequelize.INTEGER,
-        allowNull:false,
-        references:{
-          model:'tbl_market_subcategory',
-          key:"subcategory_id"
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
-      },
-      product_title:{
-        type:Sequelize.STRING,
-        allowNull:false,
-        validate:{
-          len:[4-15]
-        }
-      },
-     product_description: {
-        type: Sequelize.STRING
-      },
-      price:{
-        type:Sequelize.INTEGER,
-        allowNull:false,
-        defaultValue:0
-      },
-      discountedPrice :{
-        type : Sequelize.INTEGER,
-        defaultValue : 0
-      },
-      createdBy:{
+      user_id :{
         type:Sequelize.INTEGER,
         allowNull:false
       },
+      username:{
+        type:Sequelize.STRING,
+        allowNull:false,
+      },
+      email:{
+        type:Sequelize.STRING,
+        allowNull:false,
+        unique:true
+      },
+      password:{
+        type:Sequelize.STRING,
+        allowNull:false
+      },
+      mobileNo:{
+        type:Sequelize.STRING,
+        allowNull:false,
+        defaultValue:'0000000000',
+        validate:{
+          len:[10,10]
+        }
+      },
+      role:{
+        type:Sequelize.ENUM('user','admin','superadmin'),
+        defaultValue:'user',
+        allowNull:false,
+      },
+      tokenVersion:{
+        type:Sequelize.INTEGER,
+      },
+      createdBy:{
+        type:Sequelize.INTEGER
+      },
       updatedBy:{
-        type:Sequelize.STRING
+        type:Sequelize.INTEGER
       },
       is_delete:{
         type:Sequelize.BOOLEAN,
@@ -61,6 +64,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_product');
+    await queryInterface.dropTable('tbl_market_userLog');
   }
 };

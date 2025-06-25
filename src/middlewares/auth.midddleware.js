@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
   const token = authHeader;
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await db.User.findByPk(decoded.id);
+    const user = await db.User.findByPk(decoded.user_id);
     if (!user) {
       throw new apiError(
         HTTP_STATUS.DATA_NOT_FOUND,

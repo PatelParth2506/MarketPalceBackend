@@ -3,18 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class OrderProduct extends Model {
+  class OrderProductLog extends Model {
     static associate(models) {
-      OrderProduct.belongsTo(models.Product, { foreignKey : 'product_id' })
-      OrderProduct.belongsTo(models.Order, { foreignKey : 'order_id' })
+      // define association here
     }
   }
-  OrderProduct.init({
-    orderProduct_id: {
+  OrderProductLog.init({
+    orderProductLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      orderProduct_id : {
+        type : DataTypes.INTEGER,
+        allowNull : false
       },
       order_id:{
         type:DataTypes.INTEGER,
@@ -42,10 +45,10 @@ module.exports = (sequelize, DataTypes) => {
       },
   }, {
     sequelize,
-    modelName: 'OrderProduct',
-    tableName:'tbl_market_orderProduct',
-    timestamps:true,
-    id:false
+    modelName: 'OrderProductLog',
+    tableName : 'tbl_market_orderproductLog',
+    timestamps :true,
+    id : false
   });
-  return OrderProduct;
+  return OrderProductLog;
 };

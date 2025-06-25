@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Session.init({
-      id: {
+      session_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull:false,
         references:{
           model:'tbl_market_sesssion',
-          key:'id'
+          key:'user_id'
         },
         onDelete:'CASCADE',
         onUpdate:'CASCADE'
@@ -39,7 +39,8 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Session',
     tableName:'tbl_market_session',
-    timestamps:true
+    timestamps:true,
+    id:false
   });
   return Session;
 };

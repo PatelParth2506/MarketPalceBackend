@@ -2,22 +2,20 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_productImage', {
-      productImage_id: {
+    await queryInterface.createTable('ProductImageLogs', {
+      productImageLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      productimage_id:{
+        type:Sequelize.INTEGER,
+        allowNull:false
+      },
       product_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-          model: 'tbl_market_product',
-          key: 'product_id'
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
       },
       image_name : {
         type: Sequelize.STRING,
@@ -45,6 +43,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_productImage');
+    await queryInterface.dropTable('ProductImageLogs');
   }
 };

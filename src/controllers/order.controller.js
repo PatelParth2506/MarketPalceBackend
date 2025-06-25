@@ -3,9 +3,12 @@ const { apiResponse } = require("../utils/apiResponse");
 const db = require("../models/index");
 const { fn, col, Op, where } = require("sequelize");
 const { HTTP_CODE, HTTP_STATUS } = require("../utils/constans");
+const activityLog = require("../utils/activityLog");
 const Order = db.Order;
+const OrderLog = db.OrderLog
 const Product = db.Product;
 const OrderProduct = db.OrderProduct;
+const OrderProductLog = db.OrderProductLog
 
 const ctrlPlaceOrder = async (req, res) => {
   const { order_items } = req.body;
@@ -37,7 +40,7 @@ const ctrlPlaceOrder = async (req, res) => {
     totalPrice += price;
 
     orderData.push({
-      product_id: product.id,
+      product_id: product.product_id,
       product_name: product.product_title,
       product_price: product.price,
       product_discounted_price: product.discountedPrice,
@@ -46,7 +49,7 @@ const ctrlPlaceOrder = async (req, res) => {
   }
 
   const order = await Order.create({
-    user_id: req.user.id,
+    user_id: req.user.user_id,
     totalPrice,
     order_status: "pending",
   });
@@ -56,12 +59,13 @@ const ctrlPlaceOrder = async (req, res) => {
       "Error Creating Order"
     );
   }
-
+  await activityLog(order,OrderLog)
   for (const op of orderData) {
-    await OrderProduct.create({
+    const orderproduct = await OrderProduct.create({
       order_id: order.id,
       ...op,
     });
+    await activityLog(orderproduct,OrderProductLog)
   }
 
   res
@@ -78,13 +82,13 @@ const ctrlUpdateProduct_status = async (req, res) => {
     );
   }
 
-  if (order.user_id !== req.user.id && req.user.role === "user") {
+  if (order.user_id !== req.user.user_id && req.user.role === "user") {
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
   order.order_status = req.body.order_status;
   await order.save();
-
+  await activityLog(order,OrderLog)
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Status Updated SuccessFully"));
@@ -95,7 +99,7 @@ const ctrlGetAllOrders = async (req, res) => {
 
   if (req.user.role === "user") {
     orders = await Order.findAll({
-      where: { user_id: req.user.id },
+      where: { user_id: req.user.user_id },
       include: {
         model: db.OrderProduct,
         attributes: [

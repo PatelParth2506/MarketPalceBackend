@@ -7,13 +7,15 @@ const { HTTP_CODE, HTTP_STATUS } = require("../utils/constans");
 const db = require("../models/index");
 const User = db.User;
 const Session = db.Session;
-
+const UserLog = db.UserLog
+const activityLog = require('../utils/activityLog')
 dotenv.config();
+
 
 const createAccessToken = (user) => {
   return jwt.sign(
     {
-      id: user.id,
+      user_id: user.user_id,
       username: user.username,
       role: user.role,
       tokenVersion: user.tokenVersion,
@@ -28,7 +30,7 @@ const createAccessToken = (user) => {
 const createRefreshToken = (user) => {
   return jwt.sign(
     {
-      id: user.id,
+      user_id: user.user_id,
       username: user.username,
       role: user.role,
       tokenVersion: user.tokenVersion,
@@ -66,14 +68,13 @@ const ctrlCreateUser = async (req, res) => {
       "User Already Exists With This Creditnals"
     );
   }
-
   const user = await User.create({
     username: req.body.username,
     email: req.body.email,
     password: req.body.password,
     mobileNo: req.body.mobileNo,
     role: req.body.role,
-    createdBy: req.user.id,
+    createdBy: req.user.user_id,
   });
   if (!user){
     throw new apiError(
@@ -81,7 +82,8 @@ const ctrlCreateUser = async (req, res) => {
       "Internal Server Error"
     );
   }
-  
+  await activityLog(user,UserLog)
+
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -109,7 +111,7 @@ const ctrlLogin = async (req, res) => {
   const genrefreshtoken = createRefreshToken(usercheck);
   const refreshtoken = await db.Session.create({
     refreshToken: genrefreshtoken,
-    user_id: usercheck.id,
+    user_id: usercheck.user_id,
     ip_address: req.ip,
     agent: req.headers["user-agent"],
   });
@@ -153,7 +155,7 @@ const ctrlGetallUsers = async (req, res) => {
 const ctrlUpdateUser = async (req, res) => {
   const usercheck = await User.findOne({ 
     where: { 
-        id: req.body.id
+        user_id: req.body.user_id
     } 
   });
   if (!usercheck){
@@ -163,7 +165,7 @@ const ctrlUpdateUser = async (req, res) => {
     );
   }
   
-  if (usercheck.id !== req.user.id && req.user.role === "user"){
+  if (usercheck.user_id !== req.user.user_id && req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
   
@@ -189,10 +191,10 @@ const ctrlUpdateUser = async (req, res) => {
       "One Of The Feild Is Required To Update"
     );
   }
-  updatedData.updatedBy = req.user.id;
+  updatedData.updatedBy = req.user.user_id;
   
   await usercheck.update(updatedData);
-
+  await activityLog(usercheck,UserLog)
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -201,20 +203,20 @@ const ctrlUpdateUser = async (req, res) => {
 };
 
 const ctrlDeleteUser = async (req, res) => {
-  const user = await User.findByPk(req.body.id);
+  const user = await User.findByPk(req.body.user_id);
   if (!user){
     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No User Found");
   }
   
-  if (user.id !== req.user.id || req.user.role === "user"){
+  if (user.user_id !== req.user.user_id || req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
   
-  user.updatedBy = req.user.id;
+  user.updatedBy = req.user.user_id;
   user.is_delete = true;
   
   await user.save();
-  
+  await activityLog(user,UserLog)
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "User Deleted SuccessFully", []));
@@ -233,7 +235,7 @@ const ctrlGenrateAccessToken = async (req, res) => {
   if (!session) throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Invalid Token");
   
   const accessToken = jwt.sign({
-    id: session.user_id,
+    user_id: session.user_id,
     username: session.User.username,
     role: session.User.role,
   });
@@ -256,13 +258,14 @@ const ctrlGenrateAccessToken = async (req, res) => {
 };
 
 const ctrlGetAllLoggedInUser = async (req, res) => {
-  const user = await User.findByPk(req.body.id, {
+  const user = await User.findByPk(req.body.user_id, {
     include: [ Session ],
   });
-  if (!user) throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "User Not Found");
-  
+  console.log(user)
+  if (!user) throw new apiError(HTTP_STATUS.NOT_FOUND, "User Not Found");
+  console.log("Not Coming")
   res
-    .status(200)
+    .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "User Fetched SuccessFully", user));
 };
 
@@ -290,7 +293,7 @@ const ctrlLogoutAllUser = async (req, res) => {
   const session = await Session.findOne({
     where: { 
         refreshToken: req.body.refreshToken, 
-        user_id: req.body.id 
+        user_id: req.body.user_id
     },
   });
   if (!session){
@@ -300,12 +303,13 @@ const ctrlLogoutAllUser = async (req, res) => {
     );
   }
   
-  const user = await User.findByPk(req.body.id);
+  const user = await User.findByPk(req.body.user_id);
   user.tokenVersion += 2;
-  
+  await user.save()
+  await activityLog(user,UserLog)
   await Session.destroy({ 
     where: { 
-        user_id: req.body.id 
+        user_id: req.body.user_id 
     } 
   });
   

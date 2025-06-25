@@ -3,17 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Category extends Model {
+  class CategoryLog extends Model {
     static associate(models) {
-      Category.hasMany(models.Subcategory,{ foreignKey: 'category_id',sourceKey:"category_id" })
+      // define association here
     }
   }
-  Category.init({
-    category_id: {
+  CategoryLog.init({
+     categoryLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      category_id :{ 
+        type:DataTypes.INTEGER,
+        allowNull:false
       },
       title:{
         type:DataTypes.STRING,
@@ -44,10 +48,10 @@ module.exports = (sequelize, DataTypes) => {
       },
   }, {
     sequelize,
-    modelName: 'Category',
-    tableName:'tbl_market_category',
+    modelName: 'CategoryLog',
+    tableName:'tbl_market_categoryLog',
     timestamps:true,
-    id:false
+    id:false    
   });
-  return Category;
+  return CategoryLog;
 };

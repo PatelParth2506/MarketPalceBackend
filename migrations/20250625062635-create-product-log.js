@@ -2,33 +2,35 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_subcategory', {
-      subcategory_id: {
+    await queryInterface.createTable('tbl_market_productLog', {
+      productLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      category_id: {
-        type: Sequelize.INTEGER,
-        allowNull:false,
-        references:{
-          model:'tbl_market_category',
-          key:"category_id"
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
-      },
-      subcategory_title: {
-        type: Sequelize.STRING,
+      product_id : {
+        type:Sequelize.INTEGER,
         allowNull:false
       },
-      subcategory_description: {
+      subcategory_id:{
+        type:Sequelize.INTEGER,
+        allowNull:false,
+      },
+      product_title:{
+        type:Sequelize.STRING,
+        allowNull:false,
+      },
+     product_description: {
         type: Sequelize.STRING
       },
-      subcategory_image_path: {
-        type: Sequelize.STRING,
+      price:{
+        type:Sequelize.INTEGER,
         allowNull:false
+      },
+      discountedPrice:{
+        type:Sequelize.INTEGER,
+        defaultValue:0
       },
       createdBy:{
         type:Sequelize.INTEGER,
@@ -53,6 +55,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_subcategory');
+    await queryInterface.dropTable('tbl_market_productLog');
   }
 };

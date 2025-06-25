@@ -3,19 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class UserLog extends Model {
     static associate(models) {
-      User.hasMany(models.Cart,{ foreignKey : 'user_id', sourceKey: 'user_id' })
-      User.hasMany(models.Address,{ foreignKey : 'user_id', sourceKey: 'user_id' })
-      User.hasMany(models.Session, { foreignKey : 'user_id', sourceKey : 'user_id' })
+      
     }
   }
-  User.init({
-    user_id: {
+  UserLog.init({
+   userLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      user_id :{
+        type:DataTypes.INTEGER,
+        allowNull:false
       },
       username:{
         type:DataTypes.STRING,
@@ -58,11 +60,11 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue:false,
         allowNull:false
       },
-  }, {
+  },{
     sequelize,
-    modelName: 'User',
-    tableName:'tbl_market_user',
+    modelName: 'UserLog',
+    tableName:'tbl_market_userLog',
     timestamps:true
-  });
-  return User;
+});
+  return UserLog;
 };

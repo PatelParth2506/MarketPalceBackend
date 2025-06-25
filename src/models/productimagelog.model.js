@@ -3,17 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class ProductImage extends Model {
+  class ProductImageLog extends Model {
     static associate(models) {
-      ProductImage.belongsTo(models.Product, { foreignKey : 'product_id', targetKey : 'product_id' })
+      // define association here
     }
   }
-  ProductImage.init({
-   productImage_id: {
+  ProductImageLog.init({
+    productImageLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      productimage_id : {
+        type:DataTypes.INTEGER,
+        allowNull:false
       },
       product_id: {
         type: DataTypes.INTEGER,
@@ -36,10 +40,10 @@ module.exports = (sequelize, DataTypes) => {
       },
   }, {
     sequelize,
-    modelName: 'ProductImage',
-    tableName: 'tbl_market_productImage',
-    timestamps: true,
+    modelName: 'ProductImageLog',
+    tableName:'tbl_market_productImageLog',
+    timestamps:true,
     id:false
   });
-  return ProductImage;
+  return ProductImageLog;
 };

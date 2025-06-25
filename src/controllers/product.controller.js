@@ -1,6 +1,8 @@
 const { where, Op } = require("sequelize");
 const db = require("../models/index.js");
 const Product = db.Product;
+const ProductLog = db.ProductLog
+const ProductImageLog = db.ProductImageLog
 const ProductImage = db.ProductImage;
 const Subcategory = db.Subcategory;
 const { apiError } = require("../utils/apiError.js");
@@ -8,6 +10,21 @@ const { apiResponse } = require("../utils/apiResponse.js");
 const { HTTP_CODE, HTTP_STATUS } = require("../utils/constans.js");
 const fs = require("fs");
 const path = require("path");
+const activityLog = require('../utils/activityLog.js')
+
+// const ProductImageLogRecored = async (productImages) => {
+//   try {
+//     const products = productImages.map((product)=>{
+//       return product = product.toJSON()
+//     })
+//     console.log(products)
+//     await ProductImageLog.bulkCreate(products)
+//   } catch (err) {
+//     console.log("Error Inserting Records In ProductImageLog");
+//     throw err;
+//   }
+// };
+
 
 const ctrlCreateProduct = async (req, res) => {
   const productCheck = await Product.findOne({
@@ -24,7 +41,7 @@ const ctrlCreateProduct = async (req, res) => {
 
   const subcategory = await Subcategory.findOne({
     where: {
-       id: req.body.subcategory_id 
+       subcategory_id: req.body.subcategory_id 
     },
   });
   if (!subcategory){
@@ -36,7 +53,7 @@ const ctrlCreateProduct = async (req, res) => {
     product_description: req.body.description,
     subcategory_id: req.body.subcategory_id,
     price: req.body.price,
-    createdBy: req.user.id,
+    createdBy: req.user.user_id,
   });
 
   if (!product){
@@ -45,7 +62,6 @@ const ctrlCreateProduct = async (req, res) => {
       "Error Createing Product"
     );
   }
-
   let productImage;
   if (req.files && req.files.length > 0) {
     productImage = req.files.map( ( file ) => {
@@ -60,7 +76,7 @@ const ctrlCreateProduct = async (req, res) => {
         );
       }
       return {
-        product_id: product.id,
+        product_id: product.product_id,
         image_path: file.path,
         image_type: file.mimetype,
         image_name: file.originalname,
@@ -68,7 +84,7 @@ const ctrlCreateProduct = async (req, res) => {
     });
   }
   const productImages = await ProductImage.bulkCreate(productImage);
-  
+  await activityLog(product,ProductLog)
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -88,13 +104,13 @@ const ctrlDeleteProduct = async (req, res) => {
     );
   }
 
-  if (req.user.id !== product.createdBy && req.user.role === "user"){
+  if (req.user.user_id !== product.createdBy && req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
   product.is_delete = true;
   await product.save();
-
+  await activityLog(product,ProductLog)
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Product Deleted SuccesFully"));
@@ -109,7 +125,7 @@ const ctrlUpdateProduct = async (req, res) => {
     );
   }
 
-  if (product.createdBy !== req.user.id && req.user.role === "user") {
+  if (product.createdBy !== req.user.user_id && req.user.role === "user") {
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -140,8 +156,8 @@ const ctrlUpdateProduct = async (req, res) => {
     const recordCheck = await Product.findOne({
       where: {
         product_title: updatedData.product_title,
-        id: {
-           [Op.ne]: product.id 
+        product_id: {
+           [Op.ne]: product.product_id 
         },
       },
     });
@@ -156,7 +172,7 @@ const ctrlUpdateProduct = async (req, res) => {
   if (req.files && req.files.length > 0) {
     const currentImages = await ProductImage.findAll({
       where: { 
-        product_id: product.id
+        product_id: product.product_id
       },
     });
     const currentImageCount = currentImages.length;
@@ -183,18 +199,19 @@ const ctrlUpdateProduct = async (req, res) => {
         );
       }
       return {
-        product_id: product.id,
+        product_id: product.product_id,
         image_path: file.path,
         image_type: file.mimetype,
         image_name: file.originalname,
       };
     });
-    await ProductImage.bulkCreate(productImages);
+    const products = await ProductImage.bulkCreate(productImages);
   }
 
   if (Object.keys(updatedData).length > 0 || req.files.length > 0) {
     updatedData.updatedBy = req.user.id;
     await product.update(updatedData);
+    await activityLog(product,ProductLog)
   }
 
   res
@@ -265,7 +282,7 @@ const ctrlGetAllProduct = async (req, res) => {
       SubCategory_description: Subcategory.subcategory_description,
       SubCategory_Image: Subcategory.subcategory_image_path,
       Category_title: category.title,
-      Category_id: category.id,
+      Category_id: category.category_id,
       Category_description: category.description,
       Category_Image: category.image_path,
     };
@@ -341,7 +358,7 @@ const ctrlGetSingleProduct = async (req, res) => {
     SubCategory_description: subcategory.subcategory_description,
     SubCategory_Image: subcategory.subcategory_image_path,
     Category_title: category.title,
-    Category_id: category.id,
+    Category_id: category.category_id,
     Category_description: category.description,
     Category_Image: category.image_path,
   };
@@ -365,7 +382,7 @@ const ctrlDeleteSingleProductImage = async (req, res) => {
       "No Product Image Found With This ID"
     );
   }
-  
+  // await ProductImageLogRecored(productImage)
   await productImage.destroy();
   
   res
@@ -409,7 +426,7 @@ const ctrlUpdateProductImage = async (req, res) => {
   }
   
   await productImage.save();
-  
+  // await ProductImageLogRecored(productImage)
   res
     .status(HTTP_STATUS.OK)
     .json(

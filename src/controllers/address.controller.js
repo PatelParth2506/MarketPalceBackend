@@ -4,11 +4,13 @@ const db = require("../models/index");
 const { where } = require("sequelize");
 const Address = db.Address;
 const { HTTP_STATUS, HTTP_CODE } = require("../utils/constans");
+const activityLog = require('../utils/activityLog')
+const AddressLog = db.AddressLog
 
 const ctrlCreateAddress = async (req, res) => {
   const addressCheck = await Address.findOne({
     where: {
-      user_id: req.user.id,
+      user_id: req.user.user_id,
       apartment: req.body.apartment,
     },
   });
@@ -34,7 +36,7 @@ const ctrlCreateAddress = async (req, res) => {
       "Error Creating New Address"
     );
   }
-
+  await activityLog(address,AddressLog)
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -52,14 +54,14 @@ const ctrlDeleteAddress = async (req, res) => {
     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "Address Not Found");
   }
 
-  if (address.user_id !== req.user.id && req.user.role === "user") {
+  if (address.user_id !== req.user.user_id && req.user.role === "user") {
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
   address.is_delete = true;
   address.updatedBy = req.user.id;
   await address.save();
-
+  await activityLog(address,AddressLog)
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Address Deleted SuccessFully"));
@@ -71,7 +73,7 @@ const ctrlUpdateAddress = async (req, res) => {
     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Address Found");
   }
 
-  if (req.user.id !== address.user_id) {
+  if (req.user.user_id !== address.user_id) {
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -98,10 +100,10 @@ const ctrlUpdateAddress = async (req, res) => {
     );
   }
 
-  updatedData.user_id = req.user.id;
-  updatedData.updatedBy = req.user.id;
+  updatedData.user_id = req.user.user_id;
+  updatedData.updatedBy = req.user.user_id;
   await address.update(updatedData);
-
+  await activityLog(address,AddressLog)
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -112,7 +114,7 @@ const ctrlUpdateAddress = async (req, res) => {
 const ctrlGetAddressByUserId = async (req, res) => {
   const address = await Address.findAll({
     where: { 
-        user_id: req.body.user_id || req.user.id 
+        user_id: req.body.user_id || req.user.user_id 
     },
   });
   if (!address){

@@ -3,17 +3,21 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Discount extends Model {
-     static associate(models) {
-        Discount.belongsTo(models.Product, { foreignKey : 'product_id' })
+  class DiscountLog extends Model {
+    static associate(models) {
+      // define association here
     }
   }
-  Discount.init({
-      discount_id: {
+  DiscountLog.init({
+    discountLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
+      },
+      discount_id: {
+        type : DataTypes.INTEGER,
+        allowNull : false
       },
       startingDate:{
         type:DataTypes.DATE,
@@ -47,10 +51,9 @@ module.exports = (sequelize, DataTypes) => {
       },
   }, {
     sequelize,
-    modelName: 'Discount',
-    tableName: 'tbl_market_discount',
-    timestamps:true,
-    id:false
+    modelName: 'DiscountLog',
+    tableName : 'tbl_market_discountLog',
+    timestamps : true
   });
-  return Discount;
+  return DiscountLog;
 };

@@ -9,11 +9,16 @@ const cartRoutes = require('./src/routes/cart.route')
 const orderRoutes = require('./src/routes/order.route')
 const discountRoutes = require('./src/routes/discount.route')
 const { HTTP_CODE, HTTP_STATUS } = require('./src/utils/constans')
+const db = require('./src/models/index')
+const ErrorLog = db.ErrorLog
+const ActivityLog = db.Userctivitylog
+
 const app = express()
 
 app.use(express.json({limit:"16kb"}))
 app.use(express.static("public"))
 app.use(express.urlencoded({extended:true}))
+
 
 app.use('/auth',userRoutes)
 app.use('/category',categoryRoutes)
@@ -24,9 +29,17 @@ app.use('/cart',cartRoutes)
 app.use('/order',orderRoutes)
 app.use('/discount',discountRoutes)
 
-app.use((err, req, res, next) => {
+app.use(async(err, req, res, next) => {
+  try {
+      await ErrorLog.create({
+      stack:err.stack,
+      message:err.message,
+      requestUrl:req.originalUrl,
+    })
+    } catch (error) {
+      console.log(error)
+    }
     if (err instanceof apiError) {
-      
       return res.status(err.statusCode).json({
         success: false,
         message: err.message,
@@ -41,9 +54,10 @@ app.use((err, req, res, next) => {
       message: "Internal Server Error",
       errors: [err.message],
       data: null,
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      stack:err.stack
     });
 });
+
 
 app.listen(3000,()=>{
     console.log("App Is Running In Port 3000")

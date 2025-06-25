@@ -2,39 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_category', {
-      category_id: {
+    await queryInterface.createTable('tbl_market_errorLog', {
+      errorLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title:{
-        type:Sequelize.STRING,
-        allowNull:false,
-        validate:{
-          len:[5-15]
-        }
-      },
-      description:{
-        type:Sequelize.STRING,
+      stack:{
+        type:Sequelize.TEXT,
         allowNull:false
       },
-      image_path:{
+      message:{
         type:Sequelize.STRING,
-        allowNull:false
       },
-      createdBy:{
-        type:Sequelize.INTEGER,
-        allowNull:false
-      },
-      updatedBy:{
+      requestUrl:{
         type:Sequelize.STRING
-      },
-      is_delete:{
-        type:Sequelize.BOOLEAN,
-        defaultValue:false,
-        allowNull:false
       },
       createdAt: {
         allowNull: false,
@@ -47,6 +30,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_category');
+    await queryInterface.dropTable('tbl_market_errorLog');
   }
 };

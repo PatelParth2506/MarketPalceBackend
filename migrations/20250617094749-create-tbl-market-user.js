@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('tbl_market_user', {
-      id: {
+      user_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
@@ -26,6 +26,19 @@ module.exports = {
         type:Sequelize.ENUM('user','admin','superadmin'),
         defaultValue:'user',
         allowNull:false,
+      },
+      mobileNo :{
+        type:Sequelize.STRING,
+        allowNull:false,
+        defaultValue:'0000000000',
+        validate:{
+          len:[10,10]
+        }
+      },
+      tokenVersion :{
+        type:Sequelize.INTEGER,
+        allowNull:false,
+        defaultValue:0,
       },
       createdBy:{
         type:Sequelize.INTEGER

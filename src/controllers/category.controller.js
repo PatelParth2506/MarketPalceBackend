@@ -1,12 +1,14 @@
 const db = require("../models/index.js");
 const Category = db.Category;
+const CategoryLog = db.CategoryLog
 const Subcategory = db.Subcategory;
 const fs = require("fs");
 const path = require("path");
 const { apiError } = require("../utils/apiError.js");
 const { apiResponse } = require("../utils/apiResponse.js");
-const { where } = require("sequelize");
+const { where, Op } = require("sequelize");
 const { HTTP_STATUS, HTTP_CODE } = require("../utils/constans");
+const activityLog = require("../utils/activityLog.js");
 
 const ctrlCreateCategory = async (req, res) => {
   const categorycheck = await Category.findOne({
@@ -34,9 +36,9 @@ const ctrlCreateCategory = async (req, res) => {
     title: req.body.title,
     image_path,
     description: req.body.description,
-    createdBy: req.user.id,
+    createdBy: req.user.user_id,
   });
-
+  await activityLog(category,CategoryLog)
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -52,10 +54,10 @@ const ctrlGetCategory = async (req, res) => {
   const categorys = await Category.findAll({
     where: {
       is_delete: false,
-      include: {
-        model: db.Subcategory,
-        include: [db.Product],
-      },
+    },
+    include: {
+        model: Subcategory,
+        include: [ db.Product ],
     },
   });
   if (!categorys){
@@ -68,12 +70,13 @@ const ctrlGetCategory = async (req, res) => {
 };
 
 const ctrlUpdateCategory = async (req, res) => {
+  console.log(req.body.id)
   const category = await Category.findByPk(req.body.id);
   if (!category){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Records Found");
   }
 
-  if (req.user.id !== category.createdBy && req.user.role === "user"){
+  if (req.user.user_id !== category.createdBy && req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -107,9 +110,9 @@ const ctrlUpdateCategory = async (req, res) => {
       "Can't Updated Recored With This Creditinals Already Exists"
     );
 
-  updatedData.updatedBy = req.user.id;
+  updatedData.updatedBy = req.user.user_id;
   await category.update(updatedData);
-
+  await activityLog(category,CategoryLog)
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -124,8 +127,9 @@ const ctrlDeleteCategory = async (req, res) => {
   }
 
   category.is_delete = true;
+  category.updatedBy = req.user.user_id;
   await category.save();
-
+  await activityLog(category,CategoryLog)
   res
     .status(HTTP_STATUS.OK)
     .json(

@@ -2,40 +2,50 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tbl_market_subcategory', {
-      subcategory_id: {
+    await queryInterface.createTable('tbl_market_addressLog', {
+      addressLog_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      category_id: {
-        type: Sequelize.INTEGER,
+      address_id : {
+        type:Sequelize.INTEGER,
+        allowNull : false
+      },
+      user_id:{
+        type:Sequelize.INTEGER,
         allowNull:false,
-        references:{
-          model:'tbl_market_category',
-          key:"category_id"
-        },
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE'
       },
-      subcategory_title: {
-        type: Sequelize.STRING,
+      pinCode:{
+        type:Sequelize.INTEGER,
+        allowNull:false,
+        validate:{
+          len:[6]
+        }
+      },
+      apartment:{
+        type:Sequelize.STRING,
         allowNull:false
       },
-      subcategory_description: {
-        type: Sequelize.STRING
-      },
-      subcategory_image_path: {
-        type: Sequelize.STRING,
+      landmark:{
+        type:Sequelize.STRING,
         allowNull:false
       },
+      city:{
+        type:Sequelize.STRING,
+        allowNull:false
+      },
+      state:{
+        type:Sequelize.STRING,
+        allowNull:false
+      },      
       createdBy:{
         type:Sequelize.INTEGER,
         allowNull:false
       },
       updatedBy:{
-        type:Sequelize.STRING
+        type:Sequelize.INTEGER
       },
       is_delete:{
         type:Sequelize.BOOLEAN,
@@ -53,6 +63,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tbl_market_subcategory');
+    await queryInterface.dropTable('tbl_market_addressLog');
   }
 };
