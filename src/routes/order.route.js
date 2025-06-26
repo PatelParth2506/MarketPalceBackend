@@ -7,7 +7,7 @@ const { validator } = require('../middlewares/validator.middleware')
 
 const { createorder,id,updateorder } = require('../validators/order.validator')
 
-router.post('/v1/api_placeOrder',[auth,createorder,validator],ctrlPlaceOrder)
+router.post('/v1/api_placeOrder',[auth],ctrlPlaceOrder)
 
 router.patch('/v1/api_updateOrderStatus',[auth,updateorder,validator],ctrlUpdateProduct_status)
 

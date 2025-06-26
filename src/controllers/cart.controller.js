@@ -11,7 +11,7 @@ const activityLog = require('../utils/activityLog')
 const ctrlAddToCart = async (req, res) => {
   const product = await Cart.findOne({
     where: { 
-        user_id: req.user.id,
+        user_id: req.user.user_id,
          product_id: req.body.product_id
      },
   });
@@ -22,7 +22,7 @@ const ctrlAddToCart = async (req, res) => {
     await activityLog(product,CartLog)
   } else {
     const cart = await Cart.create({
-      user_id: req.user.id,
+      user_id: req.user.user_id,
       product_id: req.body.product_id,
       quentity: req.body.quentity,
     });
@@ -35,7 +35,7 @@ const ctrlAddToCart = async (req, res) => {
 };
 
 const ctrlRemoveCart = async (req, res) => {
-  const cart = await Cart.findByPk(id);
+  const cart = await Cart.findByPk(req.body.id);
   if (!cart){
     throw new apiError(
       HTTP_STATUS.DATA_NOT_FOUND,
@@ -60,7 +60,7 @@ const ctrlUpdateQuentity = async (req, res) => {
      throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Found");
   }
   
-  if (cart.user_id !== req.user.id){
+  if (cart.user_id !== req.user.user_id){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -75,7 +75,7 @@ const ctrlUpdateQuentity = async (req, res) => {
 const ctrlGetCartById = async (req, res) => {
   const cart = await Cart.findAll({
     where: {
-         user_id: req.user.id
+         user_id: req.user.user_id
     },
     include: [ db.Product ],
     raw: true,

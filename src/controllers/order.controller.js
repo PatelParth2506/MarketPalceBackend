@@ -4,11 +4,13 @@ const db = require("../models/index");
 const { fn, col, Op, where } = require("sequelize");
 const { HTTP_CODE, HTTP_STATUS } = require("../utils/constans");
 const activityLog = require("../utils/activityLog");
+const { user_id } = require("../validators/address.validator");
 const Order = db.Order;
 const OrderLog = db.OrderLog
 const Product = db.Product;
 const OrderProduct = db.OrderProduct;
 const OrderProductLog = db.OrderProductLog
+const CartLog = db.CartLog
 
 const ctrlPlaceOrder = async (req, res) => {
   const { order_items } = req.body;
@@ -30,7 +32,18 @@ const ctrlPlaceOrder = async (req, res) => {
         `No Product Found With ${item.id} Id`
       );
     }
-
+    const cartItems = await db.Cart.findAll({ 
+      where : {
+        product_id : product.product_id,
+        user_id : req.user.user_id
+      }
+    })
+    if(cartItems.length !== 0){
+      cartItems.map(async(cart)=>{
+        await activityLog(cart,CartLog)
+        await cart.destroy()
+      })
+    }
     let price;
     if (product.discountedPrice === 0) {
       price = product.price * item.quentity;
@@ -62,7 +75,7 @@ const ctrlPlaceOrder = async (req, res) => {
   await activityLog(order,OrderLog)
   for (const op of orderData) {
     const orderproduct = await OrderProduct.create({
-      order_id: order.id,
+      order_id: order.order_id,
       ...op,
     });
     await activityLog(orderproduct,OrderProductLog)
@@ -213,10 +226,14 @@ const ctrlGetDateWiseOrder = async (req, res) => {
       },
     },
   });
+  if(order.length === 0){
+    throw new apiError(HTTP_STATUS.NOT_FOUND,"No Order Found In This Dates")
+  }
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Fetched", order));
 };
+
 
 module.exports = {
   ctrlPlaceOrder,

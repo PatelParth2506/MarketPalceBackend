@@ -16,7 +16,7 @@ router.post('/v1/api_createAddress',[auth,createAddress,validator],ctrlCreateAdd
 
 router.delete('/v1/api_deleteAddress',[auth,id,validator],ctrlDeleteAddress)
 
-router.patch('/v1/api_updateAddress',[auth,id,upload.none(),validator],ctrlUpdateAddress)
+router.patch('/v1/api_updateAddress',[auth,upload.none(),id,validator],ctrlUpdateAddress)
 
 router.get('/v1/api_getAddressByUserid',[auth,user_id,validator],ctrlGetAddressByUserId)
 

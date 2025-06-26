@@ -12,18 +12,17 @@ const fs = require("fs");
 const path = require("path");
 const activityLog = require('../utils/activityLog.js')
 
-// const ProductImageLogRecored = async (productImages) => {
-//   try {
-//     const products = productImages.map((product)=>{
-//       return product = product.toJSON()
-//     })
-//     console.log(products)
-//     await ProductImageLog.bulkCreate(products)
-//   } catch (err) {
-//     console.log("Error Inserting Records In ProductImageLog");
-//     throw err;
-//   }
-// };
+const ProductImageLogRecored = async (productImages) => {
+  try {
+    const products = productImages.map(async(product)=>{
+       const productes = product.toJSON()
+        await ProductImageLog.create(productes)
+    })
+  } catch (err) {
+    console.log("Error Inserting Records In ProductImageLog");
+    throw err;
+  }
+};
 
 
 const ctrlCreateProduct = async (req, res) => {
@@ -84,6 +83,7 @@ const ctrlCreateProduct = async (req, res) => {
     });
   }
   const productImages = await ProductImage.bulkCreate(productImage);
+  await ProductImageLogRecored(productImages)
   await activityLog(product,ProductLog)
   res
     .status(HTTP_STATUS.CREATED)
@@ -107,7 +107,22 @@ const ctrlDeleteProduct = async (req, res) => {
   if (req.user.user_id !== product.createdBy && req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
+  const productImages = await ProductImage.findAll({ where : { product_id : product.product_id } })
+  if(!productImages) throw new apiError(HTTP_STATUS.NOT_FOUND,"No Product Images Found")
+    
+  productImages.map(async(image)=>{
+    const oldimagepath = path.join(
+    __dirname,
+    "..",
+    "..",
+    image.image_path
+  );
 
+  if (fs.existsSync(oldimagepath)) {
+    fs.unlinkSync(oldimagepath);
+  }
+  await image.destroy()
+  })
   product.is_delete = true;
   await product.save();
   await activityLog(product,ProductLog)
@@ -382,7 +397,17 @@ const ctrlDeleteSingleProductImage = async (req, res) => {
       "No Product Image Found With This ID"
     );
   }
-  // await ProductImageLogRecored(productImage)
+  const oldimagepath = path.join(
+    __dirname,
+    "..",
+    "..",
+    productImage.image_path
+  );
+
+  if (fs.existsSync(oldimagepath)) {
+    fs.unlinkSync(oldimagepath);
+  }
+  await ProductImageLogRecored([productImage])
   await productImage.destroy();
   
   res
@@ -426,7 +451,7 @@ const ctrlUpdateProductImage = async (req, res) => {
   }
   
   await productImage.save();
-  // await ProductImageLogRecored(productImage)
+  await ProductImageLogRecored([productImage])
   res
     .status(HTTP_STATUS.OK)
     .json(

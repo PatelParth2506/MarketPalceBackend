@@ -207,14 +207,15 @@ const ctrlGetSubCategoryById = async (req, res) => {
       Category,
        db.Product
     ],
+    required : false
   });
   if (!subCategory){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Records Found With This Details"
     );
   }
-  
+  console.log(subCategory)
   const subcategory_title = subCategory.subcategory_title;
   const category_title = subCategory.Category.title;
   const newdata = subCategory.Products.map((product) => {

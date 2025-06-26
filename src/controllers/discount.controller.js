@@ -243,7 +243,7 @@ const ctrlUpdateDiscount = async (req, res) => {
       new apiResponse(
         HTTP_CODE.OK,
         "Discount Updated SuccessFully",
-        updatedData
+        discount
       )
     );
 };

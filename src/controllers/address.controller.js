@@ -27,8 +27,8 @@ const ctrlCreateAddress = async (req, res) => {
     landmark: req.body.landmark,
     state: req.body.state,
     city: req.body.city,
-    user_id: req.body.user_id || req.user.id,
-    createdBy: req.user.id,
+    user_id: req.body.user_id || req.user.user_id,
+    createdBy: req.user.user_id,
   });
   if (!address) {
     throw new apiError(
@@ -68,12 +68,12 @@ const ctrlDeleteAddress = async (req, res) => {
 };
 
 const ctrlUpdateAddress = async (req, res) => {
-  const address = await Address.findByPk(id);
+  const address = await Address.findByPk(req.body.id);
   if (!address) {
     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Address Found");
   }
 
-  if (req.user.user_id !== address.user_id) {
+  if (req.user.user_id !== address.user_id  && req.user.role !== 'superadmin') {
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
@@ -117,8 +117,8 @@ const ctrlGetAddressByUserId = async (req, res) => {
         user_id: req.body.user_id || req.user.user_id 
     },
   });
-  if (!address){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Address Found");
+  if (address.length === 0){
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Address Found");
   }
   
   res
