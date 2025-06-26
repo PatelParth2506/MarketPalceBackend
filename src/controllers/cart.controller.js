@@ -38,12 +38,12 @@ const ctrlRemoveCart = async (req, res) => {
   const cart = await Cart.findByPk(req.body.id);
   if (!cart){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Cart Found With This Details"
     );
     }
 
-  if (cart.user_id !== req.user.user_id){
+  if (cart.user_id !== req.user.user_id || req.user.role === 'user'){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
   await activityLog(cart,CartLog)
@@ -57,16 +57,18 @@ const ctrlRemoveCart = async (req, res) => {
 const ctrlUpdateQuentity = async (req, res) => {
   const cart = await Cart.findByPk(req.body.id);
   if (!cart){
-     throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Found");
+     throw new apiError(HTTP_STATUS.NOT_FOUND, "No Cart Found");
   }
   
-  if (cart.user_id !== req.user.user_id){
+  if (cart.user_id !== req.user.user_id || req.user.role === 'user'){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
 
   cart.quentity = req.body.quentity;
+  
   await cart.save();
   await activityLog(cart,CartLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Quentity Updated SuccessFully", cart));
@@ -81,7 +83,7 @@ const ctrlGetCartById = async (req, res) => {
     raw: true,
   });
   if (!cart){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Item Found"); 
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Cart Item Found"); 
   }
 
   res
@@ -98,7 +100,7 @@ const ctrlGetAllCart = async (req, res) => {
     raw: true,
   });
   if (!cart){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Cart Item Found"); 
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Cart Item Found"); 
   }
   
   res

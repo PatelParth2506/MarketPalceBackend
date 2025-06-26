@@ -11,7 +11,6 @@ const UserLog = db.UserLog
 const activityLog = require('../utils/activityLog')
 dotenv.config();
 
-
 const createAccessToken = (user) => {
   return jwt.sign(
     {
@@ -76,6 +75,24 @@ const ctrlCreateUser = async (req, res) => {
     role: req.body.role,
     createdBy: req.user.user_id,
   });
+//  const user= await db.sequelize.query(
+//   `INSERT INTO tbl_market_user 
+//     (username, email, password, mobileNo, role, createdBy,createdAt,updatedAt) 
+//    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+//   {
+//     replacements: [
+//       req.body.username,
+//       req.body.email,
+//       req.body.password,
+//       req.body.mobileNo,
+//       req.body.role,
+//       req.user.user_id,
+//       new Date(),
+//       new Date()
+//     ],
+//     type: db.Sequelize.QueryTypes.INSERT
+//   }
+// )
   if (!user){
     throw new apiError(
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -109,7 +126,7 @@ const ctrlLogin = async (req, res) => {
   }
   
   const genrefreshtoken = createRefreshToken(usercheck);
-  const refreshtoken = await db.Session.create({
+  const session = await Session.create({
     refreshToken: genrefreshtoken,
     user_id: usercheck.user_id,
     ip_address: req.ip,
@@ -123,7 +140,7 @@ const ctrlLogin = async (req, res) => {
       new apiResponse(HTTP_CODE.OK, "User LoggedIn SuccessFully", [
         usercheck,
         accessToken,
-        refreshtoken,
+        session,
       ])
     );
 };
@@ -139,10 +156,10 @@ const ctrlGetallUsers = async (req, res) => {
   const users = await User.findAll({ 
     where: {
         is_delete: false 
-    }
+    },
   });
   if (!users){ 
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No User Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No User Found");
   }
   
   res
@@ -160,7 +177,7 @@ const ctrlUpdateUser = async (req, res) => {
   });
   if (!usercheck){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No User Found With This Credentials"
     );
   }
@@ -205,7 +222,7 @@ const ctrlUpdateUser = async (req, res) => {
 const ctrlDeleteUser = async (req, res) => {
   const user = await User.findByPk(req.body.user_id);
   if (!user){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No User Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No User Found");
   }
   
   if (user.user_id !== req.user.user_id || req.user.role === "user"){
@@ -261,7 +278,6 @@ const ctrlGetAllLoggedInUser = async (req, res) => {
   const user = await User.findByPk(req.body.user_id, {
     include: [ Session ],
   });
-  console.log(user)
   if (!user) throw new apiError(HTTP_STATUS.NOT_FOUND, "User Not Found");
   console.log("Not Coming")
   res

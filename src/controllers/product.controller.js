@@ -14,16 +14,15 @@ const activityLog = require('../utils/activityLog.js')
 
 const ProductImageLogRecored = async (productImages) => {
   try {
-    const products = productImages.map(async(product)=>{
-       const productes = product.toJSON()
-        await ProductImageLog.create(productes)
+    productImages.map(async(products)=>{
+       const product = products.toJSON()
+        await ProductImageLog.create(product)
     })
   } catch (err) {
     console.log("Error Inserting Records In ProductImageLog");
     throw err;
   }
 };
-
 
 const ctrlCreateProduct = async (req, res) => {
   const productCheck = await Product.findOne({
@@ -44,7 +43,7 @@ const ctrlCreateProduct = async (req, res) => {
     },
   });
   if (!subcategory){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "Invalid Subcategory");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "Invalid Subcategory");
   }
 
   const product = await Product.create({
@@ -82,9 +81,11 @@ const ctrlCreateProduct = async (req, res) => {
       };
     });
   }
+  
   const productImages = await ProductImage.bulkCreate(productImage);
   await ProductImageLogRecored(productImages)
   await activityLog(product,ProductLog)
+  
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -99,7 +100,7 @@ const ctrlDeleteProduct = async (req, res) => {
   const product = await Product.findByPk(req.body.id);
   if (!product){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Product Found With This ID"
     );
   }
@@ -107,6 +108,7 @@ const ctrlDeleteProduct = async (req, res) => {
   if (req.user.user_id !== product.createdBy && req.user.role === "user"){
     throw new apiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized Access");
   }
+
   const productImages = await ProductImage.findAll({ where : { product_id : product.product_id } })
   if(!productImages) throw new apiError(HTTP_STATUS.NOT_FOUND,"No Product Images Found")
     
@@ -117,15 +119,19 @@ const ctrlDeleteProduct = async (req, res) => {
     "..",
     image.image_path
   );
+  await ProductImageLogRecored(image)
 
   if (fs.existsSync(oldimagepath)) {
     fs.unlinkSync(oldimagepath);
   }
   await image.destroy()
   })
+  
   product.is_delete = true;
+  
   await product.save();
   await activityLog(product,ProductLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Product Deleted SuccesFully"));
@@ -135,7 +141,7 @@ const ctrlUpdateProduct = async (req, res) => {
   const product = await Product.findByPk(req.body.id);
   if (!product){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Product Found With This Credentials"
     );
   }
@@ -221,6 +227,7 @@ const ctrlUpdateProduct = async (req, res) => {
       };
     });
     const products = await ProductImage.bulkCreate(productImages);
+    await ProductImageLogRecored(products)
   }
 
   if (Object.keys(updatedData).length > 0 || req.files.length > 0) {
@@ -271,7 +278,7 @@ const ctrlGetAllProduct = async (req, res) => {
     ],
   });
   if (!products){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Products Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Products Found");
   }
 
   const newdata = products.map((subproduct) => {
@@ -345,7 +352,7 @@ const ctrlGetSingleProduct = async (req, res) => {
   });
   if (!product){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Product Found With This Id"
     );
   }
@@ -393,20 +400,21 @@ const ctrlDeleteSingleProductImage = async (req, res) => {
   const productImage = await ProductImage.findByPk(req.body.id);
   if (!productImage){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Product Image Found With This ID"
     );
   }
+  
   const oldimagepath = path.join(
     __dirname,
     "..",
     "..",
     productImage.image_path
   );
-
   if (fs.existsSync(oldimagepath)) {
     fs.unlinkSync(oldimagepath);
   }
+  
   await ProductImageLogRecored([productImage])
   await productImage.destroy();
   
@@ -419,17 +427,17 @@ const ctrlUpdateProductImage = async (req, res) => {
   const productImage = await ProductImage.findByPk(req.body.id);
   if (!productImage){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Product Image Found With This ID"
     );
   }
+
   const oldimagepath = path.join(
     __dirname,
     "..",
     "..",
     productImage.image_path
   );
-
   if (fs.existsSync(oldimagepath)) {
     fs.unlinkSync(oldimagepath);
   }

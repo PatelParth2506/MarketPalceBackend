@@ -39,6 +39,7 @@ const ctrlCreateCategory = async (req, res) => {
     createdBy: req.user.user_id,
   });
   await activityLog(category,CategoryLog)
+  
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -61,7 +62,7 @@ const ctrlGetCategory = async (req, res) => {
     },
   });
   if (!categorys){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Records Found");
 }
 
   res
@@ -70,7 +71,6 @@ const ctrlGetCategory = async (req, res) => {
 };
 
 const ctrlUpdateCategory = async (req, res) => {
-  console.log(req.body.id)
   const category = await Category.findByPk(req.body.id);
   if (!category){
     throw new apiError(HTTP_STATUS.NOT_FOUND, "No Records Found");
@@ -111,39 +111,44 @@ const ctrlUpdateCategory = async (req, res) => {
     );
 
   updatedData.updatedBy = req.user.user_id;
+  
   await category.update(updatedData);
   await activityLog(category,CategoryLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(
-      new apiResponse(HTTP_CODE.OK, category, "Data Updated Successfully", true)
+      new apiResponse(HTTP_CODE.OK, category,"Data Updated Successfully", true)
     );
 };
 
 const ctrlDeleteCategory = async (req, res) => {
   const category = await Category.findByPk(req.body.id);
   if (!category){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Records Found");
   }
 
   category.is_delete = true;
   category.updatedBy = req.user.user_id;
+  
   await category.save();
   await activityLog(category,CategoryLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(
-      new apiResponse(HTTP_CODE.OK, [], "Records Deleted SuccessFully", true)
+      new apiResponse(HTTP_CODE.OK, [], "Records Deleted SuccessFully")
     );
 };
 
 const ctrlGetSingleCategory = async (req, res) => {
   const { categoryId, subcategoryId } = req.body;
+
   let newdata = [];
 
   if (categoryId) {
     
-    const category = await Category.findByPk(req.body.categoryId, {
+    const category = await Category.findByPk(categoryId, {
       where: {
          is_delete: false
       },
@@ -153,7 +158,7 @@ const ctrlGetSingleCategory = async (req, res) => {
       },
     });
     if (!category){
-      throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Category Found");
+      throw new apiError(HTTP_STATUS.NOT_FOUND, "No Category Found");
     }
 
     const category_title = category.title;
@@ -171,7 +176,7 @@ const ctrlGetSingleCategory = async (req, res) => {
       return product;
     });
   } else if (subcategoryId) {
-    const subCategory = await Subcategory.findByPk(req.body.subcategoryId, {
+    const subCategory = await Subcategory.findByPk(subcategoryId, {
       where: {
          is_delete: false 
       },
@@ -191,6 +196,8 @@ const ctrlGetSingleCategory = async (req, res) => {
         product_image_path: product.product_image_path,
       };
     });
+  }else{
+    throw new apiError(HTTP_STATUS.BAD_REQUEST,"One Of The Id Is Required To Fetch")
   }
   
   res

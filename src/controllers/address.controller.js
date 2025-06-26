@@ -36,7 +36,9 @@ const ctrlCreateAddress = async (req, res) => {
       "Error Creating New Address"
     );
   }
+  
   await activityLog(address,AddressLog)
+  
   res
     .status(HTTP_STATUS.CREATED)
     .json(
@@ -51,7 +53,7 @@ const ctrlCreateAddress = async (req, res) => {
 const ctrlDeleteAddress = async (req, res) => {
   const address = await Address.findByPk(req.body.id);
   if (!address) {
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "Address Not Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "Address Not Found");
   }
 
   if (address.user_id !== req.user.user_id && req.user.role === "user") {
@@ -60,8 +62,10 @@ const ctrlDeleteAddress = async (req, res) => {
 
   address.is_delete = true;
   address.updatedBy = req.user.id;
+  
   await address.save();
   await activityLog(address,AddressLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Address Deleted SuccessFully"));
@@ -70,7 +74,7 @@ const ctrlDeleteAddress = async (req, res) => {
 const ctrlUpdateAddress = async (req, res) => {
   const address = await Address.findByPk(req.body.id);
   if (!address) {
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Address Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Address Found");
   }
 
   if (req.user.user_id !== address.user_id  && req.user.role !== 'superadmin') {
@@ -102,8 +106,10 @@ const ctrlUpdateAddress = async (req, res) => {
 
   updatedData.user_id = req.user.user_id;
   updatedData.updatedBy = req.user.user_id;
+  
   await address.update(updatedData);
   await activityLog(address,AddressLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(

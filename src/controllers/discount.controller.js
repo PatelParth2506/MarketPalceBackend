@@ -80,6 +80,7 @@ const ctrlAddDiscount = async (req, res) => {
     typeOfDiscount: req.body.typeOfDiscount,
   });
   await activityLog(discount,DiscountLog)
+  
   const date = new Date();
   if (discount.startingDate <= date && discount.endingDate >= date) {
     product.discountedPrice = product.price - (discount.discount / 100) * product.price;
@@ -237,6 +238,7 @@ const ctrlUpdateDiscount = async (req, res) => {
   
   await discount.update(updatedData);
   await activityLog(discount,DiscountLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(

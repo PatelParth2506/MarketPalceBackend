@@ -38,7 +38,7 @@ const ctrlCreateSubCategory = async (req, res) => {
   const category = await Category.findByPk(req.body.category_id);
   if (!category){
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       "No Category Exists With This Details Enter Valid Id"
     );
   }
@@ -67,11 +67,7 @@ const ctrlGetAllSubCategory = async (req, res) => {
     where: { 
       is_delete: false 
     },
-    include: [
-      {
-        model: Category,
-      },
-    ],
+    include: [Category],
   });
   if (subcategories.length === 0) {
     return res
@@ -111,13 +107,15 @@ const ctrlDeleteSubCategory = async (req, res) => {
 
   const check = await Subcategory.findByPk(req.body.subcategory_id);
   if (!check){
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Records Are Found ");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Records Are Found ");
   }
   
   check.is_delete = true;
   check.updatedBy = req.user.user_id
+  
   await check.save();
   await activityLog(check,SubcategoryLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -185,8 +183,10 @@ const ctrlUpdateSubCategory = async (req, res) => {
   }
   
   updatedData.updatedBy = req.user.user_id;
+  
   const upatedSubCategory = await subCategory.update(updatedData);
   await activityLog(subCategory,SubcategoryLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(
@@ -215,7 +215,7 @@ const ctrlGetSubCategoryById = async (req, res) => {
       "No Records Found With This Details"
     );
   }
-  console.log(subCategory)
+  
   const subcategory_title = subCategory.subcategory_title;
   const category_title = subCategory.Category.title;
   const newdata = subCategory.Products.map((product) => {

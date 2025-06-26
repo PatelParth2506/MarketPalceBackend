@@ -28,10 +28,11 @@ const ctrlPlaceOrder = async (req, res) => {
     const product = await Product.findByPk(item.id);
     if (!product) {
       throw new apiError(
-        HTTP_STATUS.DATA_NOT_FOUND,
+        HTTP_STATUS.NOT_FOUND,
         `No Product Found With ${item.id} Id`
       );
     }
+    
     const cartItems = await db.Cart.findAll({ 
       where : {
         product_id : product.product_id,
@@ -44,6 +45,7 @@ const ctrlPlaceOrder = async (req, res) => {
         await cart.destroy()
       })
     }
+    
     let price;
     if (product.discountedPrice === 0) {
       price = product.price * item.quentity;
@@ -72,7 +74,9 @@ const ctrlPlaceOrder = async (req, res) => {
       "Error Creating Order"
     );
   }
+  
   await activityLog(order,OrderLog)
+  
   for (const op of orderData) {
     const orderproduct = await OrderProduct.create({
       order_id: order.order_id,
@@ -90,7 +94,7 @@ const ctrlUpdateProduct_status = async (req, res) => {
   const order = await Order.findByPk(req.body.id);
   if (!order) {
     throw new apiError(
-      HTTP_STATUS.DATA_NOT_FOUND,
+      HTTP_STATUS.NOT_FOUND,
       " No Order Found With This Details "
     );
   }
@@ -100,8 +104,10 @@ const ctrlUpdateProduct_status = async (req, res) => {
   }
 
   order.order_status = req.body.order_status;
+  
   await order.save();
   await activityLog(order,OrderLog)
+  
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Status Updated SuccessFully"));
@@ -139,7 +145,7 @@ const ctrlGetAllOrders = async (req, res) => {
     });
   }
   if (!orders) {
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Orders Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Orders Found");
   }
 
   res
@@ -163,7 +169,7 @@ const ctrlGetSingleOrder = async (req, res) => {
     },
   });
   if (!order) {
-    throw new apiError(HTTP_STATUS.DATA_NOT_FOUND, "No Order Found");
+    throw new apiError(HTTP_STATUS.NOT_FOUND, "No Order Found");
   }
 
   if (order.user_id !== req.user.id && req.user.role === "role") {
@@ -218,6 +224,10 @@ const ctrlGetDateWiseOrder = async (req, res) => {
   const { startDate, endDate } = req.body;
   const startingdate = new Date(startDate);
   const endingdate = new Date(endDate);
+  if(endDate < startDate){
+    throw new apiError(HTTP_STATUS.BAD_REQUEST,"Ending Date Must Me Higher Then Starting Date")
+  }
+
   const order = await Order.findAll({
     where: {
       createdAt: {
@@ -229,6 +239,7 @@ const ctrlGetDateWiseOrder = async (req, res) => {
   if(order.length === 0){
     throw new apiError(HTTP_STATUS.NOT_FOUND,"No Order Found In This Dates")
   }
+  
   res
     .status(HTTP_STATUS.OK)
     .json(new apiResponse(HTTP_CODE.OK, "Fetched", order));
